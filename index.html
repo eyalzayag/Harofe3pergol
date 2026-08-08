@@ -18,7 +18,7 @@
 html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#d9e0e4}
 canvas{display:block;width:100%;height:100%}
 #panel{
-  position:absolute;top:18px;right:18px;width:300px;padding:18px;z-index:10;color:var(--text);
+  position:absolute;top:18px;right:18px;width:290px;padding:18px;z-index:10;color:var(--text);
   background:var(--panel);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   border:1px solid var(--panel-border);border-radius:16px;
   box-shadow:0 18px 45px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.05);
@@ -49,11 +49,13 @@ h2{margin:0;font-size:12px;line-height:1.5;font-weight:400;color:var(--muted)}
   border-radius:20px;color:#4b565e;background:rgba(255,255,255,.76);backdrop-filter:blur(12px);
   font-size:11px;box-shadow:0 5px 20px rgba(0,0,0,.07)
 }
-#toggleUI{
-  position:absolute;top:18px;left:18px;z-index:12;width:42px;height:42px;border:1px solid rgba(255,255,255,.35);
+#toggleUI,#fullscreenBtn{
+  position:absolute;z-index:12;width:42px;height:42px;border:1px solid rgba(255,255,255,.35);
   border-radius:50%;background:rgba(24,29,33,.78);color:#fff;font-size:18px;cursor:pointer;backdrop-filter:blur(12px);
   box-shadow:0 7px 22px rgba(0,0,0,.15)
 }
+#toggleUI{top:18px;left:18px}
+#fullscreenBtn{top:18px;left:68px;font-size:20px}
 #modeBadge{
   position:absolute;left:72px;top:20px;z-index:11;padding:7px 11px;border-radius:18px;background:rgba(255,255,255,.82);
   color:#45515a;font-size:11px;font-weight:700;box-shadow:0 5px 18px rgba(0,0,0,.08)
@@ -66,11 +68,54 @@ h2{margin:0;font-size:12px;line-height:1.5;font-weight:400;color:var(--muted)}
 .label3d.dim{background:rgba(255,255,255,.88);color:#333;border-color:rgba(0,0,0,.08);font-weight:700}
 .label3d.level{background:#d8a650;color:#111;font-weight:800}
 @media(max-width:650px){
-  #panel{top:12px;right:12px;width:255px;padding:14px;border-radius:14px}
+  #panel{
+    top:10px;
+    right:10px;
+    width:min(86vw,310px);
+    max-height:calc(100vh - 20px);
+    overflow:auto;
+    padding:14px;
+    border-radius:16px
+  }
+  #panel.mobile-hidden{
+    opacity:0;
+    pointer-events:none;
+    transform:translateX(24px);
+  }
   h1{font-size:16px}
-  #hint{right:12px;bottom:12px;font-size:10px;max-width:80%}
-  #toggleUI{left:12px;top:12px}
-  #modeBadge{left:62px;top:15px}
+  h2{font-size:11px}
+  .layer{min-height:30px;font-size:12px}
+  .views button,.action-btn{padding:10px 8px;font-size:12px}
+  #hint{
+    right:12px;
+    left:12px;
+    bottom:10px;
+    font-size:10px;
+    text-align:center;
+    max-width:none;
+    white-space:normal
+  }
+  #toggleUI{
+    left:12px;
+    top:12px;
+    width:46px;
+    height:46px;
+    font-size:20px;
+    z-index:20
+  }
+  #fullscreenBtn{
+    left:66px;
+    top:12px;
+    width:46px;
+    height:46px;
+    font-size:20px;
+    z-index:20
+  }
+  #modeBadge{
+    left:122px;
+    top:17px;
+    font-size:10px
+  }
 }
 </style>
 </head>
@@ -103,9 +148,10 @@ h2{margin:0;font-size:12px;line-height:1.5;font-weight:400;color:var(--muted)}
   <button id="sectionMode" class="action-btn">מצב חתך</button>
 </div>
 
-<button id="toggleUI">☰</button>
+<button id="toggleUI" aria-label="פתיחת תפריט">☰</button>
+<button id="fullscreenBtn" aria-label="מסך מלא">⛶</button>
 <div id="modeBadge">מודל מלא</div>
-<div id="hint">גרירה — סיבוב | גלגלת / צביטה — זום | קליק ימני — הזזה</div>
+<div id="hint">גרירה באצבע — סיבוב | צביטה — זום | במחשב: קליק ימני — הזזה</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -322,7 +368,25 @@ viewButtons.forEach(btn=>btn.onclick=()=>{
   target.set(0,132,45);updateCam()
 });
 
-document.getElementById('toggleUI').onclick=()=>document.getElementById('panel').classList.toggle('collapsed');
+const panelEl=document.getElementById('panel');
+const isMobile=()=>window.matchMedia('(max-width:650px)').matches;
+
+if(isMobile()) panelEl.classList.add('mobile-hidden');
+
+document.getElementById('toggleUI').onclick=()=>{
+  if(isMobile()) panelEl.classList.toggle('mobile-hidden');
+  else panelEl.classList.toggle('collapsed');
+};
+
+document.getElementById('fullscreenBtn').onclick=async()=>{
+  try{
+    if(!document.fullscreenElement){
+      await document.documentElement.requestFullscreen?.();
+    }else{
+      await document.exitFullscreen?.();
+    }
+  }catch(e){}
+};
 
 let sectionOn=false;
 const sectionBtn=document.getElementById('sectionMode');
@@ -357,7 +421,14 @@ function updateLabels(){
   });
 }
 addEventListener('resize',()=>{
-  cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)
+  cam.aspect=innerWidth/innerHeight;
+  cam.updateProjectionMatrix();
+  ren.setSize(innerWidth,innerHeight);
+  if(isMobile()){
+    panelEl.classList.remove('collapsed');
+  }else{
+    panelEl.classList.remove('mobile-hidden');
+  }
 });
 function animate(){
   requestAnimationFrame(animate);
