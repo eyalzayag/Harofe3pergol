@@ -1,28 +1,372 @@
-פרגולה — הרופא 3, חיפה
-אייל צייג · אדריכלות ועיצוב פנים
-3D DESIGN MODEL
-שכבות תצוגה
-שלד פלדה
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>פרגולה — הרופא 3, חיפה | מודל 3D</title>
+<style>
+:root{
+  --panel:rgba(22,27,31,.90);
+  --panel-border:rgba(255,255,255,.10);
+  --text:#f6f7f8;
+  --muted:#aeb8c0;
+  --accent:#d8a650;
+  --btn:rgba(255,255,255,.07);
+  --btn-hover:rgba(255,255,255,.13);
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#d9e0e4}
+canvas{display:block;width:100%;height:100%}
+#panel{
+  position:absolute;top:18px;right:18px;width:300px;padding:18px;z-index:10;color:var(--text);
+  background:var(--panel);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--panel-border);border-radius:16px;
+  box-shadow:0 18px 45px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.05);
+  transition:.3s ease
+}
+#panel.collapsed{opacity:0;pointer-events:none;transform:translateX(20px)}
+.header{border-bottom:1px solid rgba(255,255,255,.10);padding-bottom:13px;margin-bottom:13px}
+h1{margin:0 0 5px;font-size:18px;line-height:1.3;font-weight:700}
+h2{margin:0;font-size:12px;line-height:1.5;font-weight:400;color:var(--muted)}
+.project-tag{display:inline-block;margin-top:10px;padding:4px 8px;border-radius:6px;font-size:10px;letter-spacing:.4px;color:#121619;background:var(--accent);font-weight:700}
+.section-title{margin:13px 0 8px;font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#8d9aa3}
+.layer{display:flex;align-items:center;justify-content:space-between;min-height:32px;cursor:pointer;user-select:none;font-size:13px}
+.layer span{flex:1}
+.layer input{appearance:none;-webkit-appearance:none;width:34px;height:18px;margin:0 0 0 10px;border-radius:18px;background:#555f66;position:relative;transition:.2s;cursor:pointer}
+.layer input:before{content:"";position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:50%;background:white;transition:.2s}
+.layer input:checked{background:var(--accent)}
+.layer input:checked:before{transform:translateX(16px)}
+.views{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}
+.views button,.action-btn{
+  appearance:none;border:1px solid rgba(255,255,255,.10);background:var(--btn);color:#f3f5f6;
+  border-radius:9px;padding:9px 7px;font-size:12px;cursor:pointer;transition:.18s ease
+}
+.views button:hover,.action-btn:hover{background:var(--btn-hover);transform:translateY(-1px)}
+.views button.active,.action-btn.active{color:#111;background:var(--accent);border-color:var(--accent);font-weight:700}
+.action-btn{width:100%;margin-top:7px}
+#hint{
+  position:absolute;right:18px;bottom:18px;z-index:9;padding:8px 12px;border:1px solid rgba(255,255,255,.25);
+  border-radius:20px;color:#4b565e;background:rgba(255,255,255,.76);backdrop-filter:blur(12px);
+  font-size:11px;box-shadow:0 5px 20px rgba(0,0,0,.07)
+}
+#toggleUI{
+  position:absolute;top:18px;left:18px;z-index:12;width:42px;height:42px;border:1px solid rgba(255,255,255,.35);
+  border-radius:50%;background:rgba(24,29,33,.78);color:#fff;font-size:18px;cursor:pointer;backdrop-filter:blur(12px);
+  box-shadow:0 7px 22px rgba(0,0,0,.15)
+}
+#modeBadge{
+  position:absolute;left:72px;top:20px;z-index:11;padding:7px 11px;border-radius:18px;background:rgba(255,255,255,.82);
+  color:#45515a;font-size:11px;font-weight:700;box-shadow:0 5px 18px rgba(0,0,0,.08)
+}
+.label3d{
+  position:absolute;transform:translate(-50%,-50%);padding:3px 6px;border-radius:5px;
+  background:rgba(22,27,31,.82);color:white;font-size:11px;white-space:nowrap;pointer-events:none;
+  border:1px solid rgba(255,255,255,.15);z-index:7
+}
+.label3d.dim{background:rgba(255,255,255,.88);color:#333;border-color:rgba(0,0,0,.08);font-weight:700}
+.label3d.level{background:#d8a650;color:#111;font-weight:800}
+@media(max-width:650px){
+  #panel{top:12px;right:12px;width:255px;padding:14px;border-radius:14px}
+  h1{font-size:16px}
+  #hint{right:12px;bottom:12px;font-size:10px;max-width:80%}
+  #toggleUI{left:12px;top:12px}
+  #modeBadge{left:62px;top:15px}
+}
+</style>
+</head>
+<body>
+<div id="panel">
+  <div class="header">
+    <h1>פרגולה — הרופא 3, חיפה</h1>
+    <h2>אייל צייג · אדריכלות ועיצוב פנים</h2>
+    <span class="project-tag">3D DESIGN MODEL</span>
+  </div>
 
-קורות רוחב 100/50
+  <div class="section-title">שכבות תצוגה</div>
+  <label class="layer"><span>שלד פלדה</span><input type="checkbox" id="t_frame" checked></label>
+  <label class="layer"><span>קורות רוחב 100/50</span><input type="checkbox" id="t_rafters" checked></label>
+  <label class="layer"><span>מרזב היקפי</span><input type="checkbox" id="t_fascia" checked></label>
+  <label class="layer"><span>חזיתות בלגי א־01–א־05</span><input type="checkbox" id="t_fronts" checked></label>
+  <label class="layer"><span>פתיחת דלתות</span><input type="checkbox" id="t_doors_open"></label>
+  <label class="layer"><span>קיר המבנה</span><input type="checkbox" id="t_wall" checked></label>
+  <label class="layer"><span>מידות וסימונים</span><input type="checkbox" id="t_notes" checked></label>
 
-מרזב היקפי
+  <div class="section-title">מבטים</div>
+  <div class="views">
+    <button data-v="iso" class="active">איזומטרי</button>
+    <button data-v="front">חזית</button>
+    <button data-v="side">חתך צד</button>
+    <button data-v="top">מבט על</button>
+  </div>
 
-חזיתות בלגי א־01–א־05
+  <div class="section-title">מצב תצוגה</div>
+  <button id="sectionMode" class="action-btn">מצב חתך</button>
+</div>
 
-פתיחת דלתות
+<button id="toggleUI">☰</button>
+<div id="modeBadge">מודל מלא</div>
+<div id="hint">גרירה — סיבוב | גלגלת / צביטה — זום | קליק ימני — הזזה</div>
 
-קיר המבנה
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const COL=15, W=625, D=311, DR=205, STEPX=569, BAY=290;
+const HF=250, HW=270, BEAM=10, RW=5, RH=10, FH=35, FW=18, FTOP=285;
+const GH=250, WINH=270;
 
-מידות וסימונים
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xe4e9ec);
+scene.fog=new THREE.Fog(0xe4e9ec,2200,5200);
 
-מבטים
-איזומטרי
-חזית
-חתך צד
-מבט על
-מצב תצוגה
-מצב חתך
-☰
-מודל מלא
-גרירה — סיבוב | גלגלת / צביטה — זום | קליק ימני — הזזה
+const cam=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,1,10000);
+const ren=new THREE.WebGLRenderer({antialias:true,alpha:false});
+ren.setSize(innerWidth,innerHeight);
+ren.setPixelRatio(Math.min(window.devicePixelRatio,2));
+ren.shadowMap.enabled=true;
+ren.shadowMap.type=THREE.PCFSoftShadowMap;
+ren.outputEncoding=THREE.sRGBEncoding;
+ren.toneMapping=THREE.ACESFilmicToneMapping;
+ren.toneMappingExposure=1.02;
+ren.domElement.style.touchAction="none";
+document.body.appendChild(ren.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x9fa8ad,.82));
+const sun=new THREE.DirectionalLight(0xfff4df,1.15);
+sun.position.set(-650,950,500);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-900;sun.shadow.camera.right=900;sun.shadow.camera.top=900;sun.shadow.camera.bottom=-900;
+sun.shadow.bias=-0.00015;scene.add(sun);
+const fill=new THREE.DirectionalLight(0xc8dded,.28);fill.position.set(600,400,-500);scene.add(fill);
+
+const mSteel=new THREE.MeshStandardMaterial({color:0x363c40,metalness:.82,roughness:.31});
+const mFascia=new THREE.MeshStandardMaterial({color:0xececea,metalness:.48,roughness:.34});
+const mWhite=new THREE.MeshStandardMaterial({color:0xf5f5f3,metalness:.28,roughness:.38});
+const mGlass=new THREE.MeshPhysicalMaterial({color:0xc3dce6,roughness:.08,metalness:0,transmission:.45,transparent:true,opacity:.38,side:THREE.DoubleSide});
+const mWall=new THREE.MeshStandardMaterial({color:0xd7d2c9,roughness:.86});
+const mFloor=new THREE.MeshStandardMaterial({color:0xc7c3bc,roughness:.88});
+
+function box(w,h,d,mat,x,y,z,parent){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;(parent||scene).add(m);return m;
+}
+function line(points,color=0x4f5960){
+  const geo=new THREE.BufferGeometry().setFromPoints(points);
+  const mat=new THREE.LineBasicMaterial({color});
+  const l=new THREE.Line(geo,mat);scene.add(l);return l;
+}
+
+const root=new THREE.Group();scene.add(root);root.position.set(-W/2,0,-D/2);
+box(W+650,8,D+650,mFloor,W/2,-4,D/2,root);
+
+const grid=new THREE.GridHelper(1300,26,0xa6adb1,0xc2c8cb);
+grid.position.set(0,.5,0);grid.material.opacity=.24;grid.material.transparent=true;scene.add(grid);
+
+const gWall=new THREE.Group();root.add(gWall);
+const wall1=box(STEPX+120,420,24,mWall,STEPX/2-40,210,-12,gWall);
+const wall2=box(24,420,DR>0?(D-DR):106,mWall,STEPX+12,210,(D-DR)/2,gWall);
+const wall3=box(W-STEPX+140,420,24,mWall,(STEPX+W+140)/2-10,210,(D-DR)-12+24,gWall);
+const upper=box(STEPX+120,25,150,mWall,STEPX/2-40,342,-99,gWall);
+
+const gFrame=new THREE.Group();root.add(gFrame);
+const colXs=[COL/2,COL+BAY+COL/2,W-COL/2];
+for(const cx of colXs) box(COL,HF+BEAM,COL,mSteel,cx,(HF+BEAM)/2,D-COL/2,gFrame);
+box(COL,HW+BEAM,COL,mSteel,COL/2,(HW+BEAM)/2,COL/2,gFrame);
+box(COL,HW+BEAM,COL,mSteel,COL+BAY+COL/2,(HW+BEAM)/2,COL/2,gFrame);
+box(COL,HW+BEAM,COL,mSteel,W-COL/2,(HW+BEAM)/2,(D-DR)+COL/2,gFrame);
+
+function slopedBeam(x){
+  const g=new THREE.Group();gFrame.add(g);
+  const L=Math.hypot(D,HW-HF);
+  box(BEAM,BEAM,L,mSteel,0,0,0,g);
+  g.position.set(x,(HW+HF)/2+BEAM/2,D/2);
+  g.rotation.x=Math.atan2(HW-HF,D);
+}
+for(const cx of colXs) slopedBeam(cx);
+box(W,BEAM,BEAM,mSteel,W/2,HF+BEAM/2,D-BEAM/2,gFrame);
+box(W,BEAM,BEAM,mSteel,W/2,HW+BEAM/2,BEAM/2,gFrame);
+
+const gRaft=new THREE.Group();root.add(gRaft);
+for(let x=58;x<W-5;x+=58){
+  const z0=(x>STEPX)?(D-DR):0, len=D-z0;
+  const g=new THREE.Group();gRaft.add(g);
+  box(RW,RH,len,mSteel,0,0,0,g);
+  const h0=HW-(HW-HF)*(z0/D);
+  g.position.set(x,(h0+HF)/2+BEAM+RH/2,z0+len/2);
+  g.rotation.x=Math.atan2(h0-HF,len);
+}
+
+const gFas=new THREE.Group();root.add(gFas);
+box(FW,FH,D+FW,mFascia,-FW/2,FTOP-FH/2,D/2,gFas);
+box(W+FW*2,FH,FW,mFascia,W/2,FTOP-FH/2,D+FW/2,gFas);
+box(FW,FH,DR+FW,mFascia,W+FW/2,FTOP-FH/2,D-DR/2,gFas);
+
+const gFronts=new THREE.Group();root.add(gFronts);
+const P=3.5,M=1.6,ZB=55,ZT=55,T=4;
+function belgianField(w,h,door){
+  const g=new THREE.Group();
+  box(w,P,T,mWhite,w/2,h-P/2,0,g);box(w,P,T,mWhite,w/2,P/2,0,g);
+  box(P,h,T,mWhite,P/2,h/2,0,g);box(P,h,T,mWhite,w-P/2,h/2,0,g);
+  box(w,M,T*.8,mWhite,w/2,ZB,0,g);box(w,M,T*.8,mWhite,w/2,h-ZT,0,g);
+  const n=Math.max(2,Math.round(w/48));
+  for(let i=1;i<n;i++) box(M,h,T*.8,mWhite,w*i/n,h/2,0,g);
+  const gl=box(w-P*2,h-P*2,1.2,mGlass,w/2,h/2,0,g);gl.castShadow=false;
+  if(door) box(1.6,12,3,new THREE.MeshStandardMaterial({color:0x202326,metalness:.5}),w-8,h/2,T/2+1.5,g);
+  return g;
+}
+function belgianBay(width,h,hasDoors){
+  const g=new THREE.Group();
+  if(!hasDoors){g.add(belgianField(width,h,false));return g;}
+  const dw=70,side=(width-2*dw)/2;
+  g.add(belgianField(side,h,false));
+  const d1=new THREE.Group(),l1=belgianField(dw,h,true);d1.add(l1);d1.position.x=side;d1.userData.hinge='L';g.add(d1);
+  const d2=new THREE.Group(),l2=belgianField(dw,h,true);l2.position.x=-dw;d2.add(l2);d2.position.x=side+2*dw;d2.userData.hinge='R';g.add(d2);
+  const f2=belgianField(side,h,false);f2.position.x=side+2*dw;g.add(f2);
+  g.userData.doors=[d1,d2];return g;
+}
+const doors=[];
+let b;
+b=belgianBay(BAY,GH,true);b.position.set(COL,0,D-COL/2);gFronts.add(b);doors.push(...b.userData.doors);
+b=belgianBay(BAY,GH,true);b.position.set(COL*2+BAY,0,D-COL/2);gFronts.add(b);doors.push(...b.userData.doors);
+b=belgianBay(D-COL*2,GH,true);b.position.set(COL/2,0,COL);b.rotation.y=-Math.PI/2;gFronts.add(b);doors.push(...b.userData.doors);
+b=belgianBay(DR-COL*2,GH,true);b.position.set(W-COL/2,0,D-COL);b.rotation.y=Math.PI/2;gFronts.add(b);doors.push(...b.userData.doors);
+b=belgianBay(BAY,WINH,true);b.position.set(COL,0,COL/2+2);gFronts.add(b);doors.push(...b.userData.doors);
+
+// ===== HTML labels attached to 3D points =====
+const noteLayer=document.createElement('div');document.body.appendChild(noteLayer);
+const notes=[];
+function addLabel(text,x,y,z,cls=''){
+  const el=document.createElement('div');
+  el.className='label3d '+cls;el.textContent=text;document.body.appendChild(el);
+  notes.push({el,p:new THREE.Vector3(x-W/2,y,z-D/2)});
+}
+addLabel('א־01',COL+BAY/2,285,20);
+addLabel('א־02',18,270,D/2);
+addLabel('א־03',COL+BAY/2,270,D-8);
+addLabel('א־04',COL*2+BAY+BAY/2,270,D-8);
+addLabel('א־05',W-18,270,D-DR/2);
+addLabel('625 ס״מ',W/2,-18,D+55,'dim');
+addLabel('311 ס״מ',-55,-18,D/2,'dim');
+addLabel('+2.70',75,HW+30,10,'dim');
+addLabel('+2.50',75,HF+18,D-5,'dim');
+addLabel('±0.00',70,10,D+20,'level');
+addLabel('שיפוע ≈ 6.4%',W/2,315,D/2,'dim');
+
+// dimension lines
+const dimGroup=new THREE.Group();scene.add(dimGroup);
+function addDimLine(a,b){
+  const geo=new THREE.BufferGeometry().setFromPoints([a,b]);
+  const mat=new THREE.LineDashedMaterial({color:0x59636a,dashSize:8,gapSize:5});
+  const l=new THREE.Line(geo,mat);l.computeLineDistances();dimGroup.add(l);
+}
+addDimLine(new THREE.Vector3(-W/2,-10,D/2+55),new THREE.Vector3(W/2,-10,D/2+55));
+addDimLine(new THREE.Vector3(-W/2-55,-10,-D/2),new THREE.Vector3(-W/2-55,-10,D/2));
+
+function bind(id,grp){document.getElementById(id).onchange=e=>grp.visible=e.target.checked;}
+bind('t_frame',gFrame);bind('t_rafters',gRaft);bind('t_fascia',gFas);bind('t_fronts',gFronts);bind('t_wall',gWall);
+document.getElementById('t_notes').onchange=e=>{
+  dimGroup.visible=e.target.checked;
+  notes.forEach(n=>n.el.style.display=e.target.checked?'block':'none');
+};
+
+let doorsOpen=false,doorAnim=0;
+document.getElementById('t_doors_open').onchange=e=>doorsOpen=e.target.checked;
+
+let theta=-.72,phi=1.03,radius=1020,target=new THREE.Vector3(0,132,45);
+function updateCam(){
+  cam.position.set(
+    target.x+radius*Math.sin(phi)*Math.sin(theta),
+    target.y+radius*Math.cos(phi),
+    target.z+radius*Math.sin(phi)*Math.cos(theta)
+  );cam.lookAt(target);
+}
+updateCam();
+
+let drag=false,pan=false,px=0,py=0;
+ren.domElement.addEventListener('mousedown',e=>{drag=e.button===0;pan=e.button===2;px=e.clientX;py=e.clientY});
+addEventListener('mouseup',()=>{drag=pan=false});
+addEventListener('mousemove',e=>{
+  const dx=e.clientX-px,dy=e.clientY-py;px=e.clientX;py=e.clientY;
+  if(drag){theta-=dx*.0045;phi=Math.max(.14,Math.min(1.50,phi-dy*.0045));updateCam()}
+  if(pan){
+    const right=new THREE.Vector3().subVectors(cam.position,target).cross(cam.up).normalize();
+    target.addScaledVector(right,dx*.55);target.y+=dy*.55;updateCam()
+  }
+});
+ren.domElement.addEventListener('contextmenu',e=>e.preventDefault());
+addEventListener('wheel',e=>{radius=Math.max(260,Math.min(3200,radius+e.deltaY*.8));updateCam()},{passive:true});
+
+let t0=null,dist0=0;
+ren.domElement.addEventListener('touchstart',e=>{
+  if(e.touches.length===1)t0={x:e.touches[0].clientX,y:e.touches[0].clientY};
+  if(e.touches.length===2)dist0=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)
+});
+ren.domElement.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&t0){
+    theta-=(e.touches[0].clientX-t0.x)*.0055;
+    phi=Math.max(.14,Math.min(1.5,phi-(e.touches[0].clientY-t0.y)*.0055));
+    t0={x:e.touches[0].clientX,y:e.touches[0].clientY};updateCam()
+  }
+  if(e.touches.length===2){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    radius=Math.max(260,Math.min(3200,radius-(d-dist0)*1.8));dist0=d;updateCam()
+  }
+},{passive:false});
+
+const viewButtons=document.querySelectorAll('.views button');
+viewButtons.forEach(btn=>btn.onclick=()=>{
+  viewButtons.forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  const v=btn.dataset.v;
+  if(v==='iso'){theta=-.72;phi=1.03;radius=1020}
+  if(v==='front'){theta=0;phi=Math.PI/2-.015;radius=880}
+  if(v==='side'){theta=Math.PI/2;phi=Math.PI/2-.015;radius=760}
+  if(v==='top'){theta=0;phi=.10;radius=920}
+  target.set(0,132,45);updateCam()
+});
+
+document.getElementById('toggleUI').onclick=()=>document.getElementById('panel').classList.toggle('collapsed');
+
+let sectionOn=false;
+const sectionBtn=document.getElementById('sectionMode');
+const modeBadge=document.getElementById('modeBadge');
+sectionBtn.onclick=()=>{
+  sectionOn=!sectionOn;
+  sectionBtn.classList.toggle('active',sectionOn);
+  modeBadge.textContent=sectionOn?'מצב חתך':'מודל מלא';
+
+  // Section presentation: hide front glazing + front fascia and slightly fade wall
+  gFronts.children.forEach((child,i)=>child.visible=sectionOn ? (i>=2) : true);
+  if(gFas.children[1]) gFas.children[1].visible=!sectionOn;
+  wall1.material.opacity=sectionOn?.42:1;
+  wall1.material.transparent=sectionOn;
+  upper.material.opacity=sectionOn?.42:1;
+  upper.material.transparent=sectionOn;
+
+  if(sectionOn){
+    theta=Math.PI/2;phi=Math.PI/2-.02;radius=760;target.set(0,135,10);updateCam();
+    viewButtons.forEach(b=>b.classList.remove('active'));
+  }
+};
+
+function updateLabels(){
+  const w=innerWidth,h=innerHeight;
+  notes.forEach(n=>{
+    const p=n.p.clone().project(cam);
+    const visible=p.z>-1 && p.z<1;
+    n.el.style.display=(visible && document.getElementById('t_notes').checked)?'block':'none';
+    n.el.style.left=((p.x*.5+.5)*w)+'px';
+    n.el.style.top=((-p.y*.5+.5)*h)+'px';
+  });
+}
+addEventListener('resize',()=>{
+  cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)
+});
+function animate(){
+  requestAnimationFrame(animate);
+  const tgt=doorsOpen?1:0;doorAnim+=(tgt-doorAnim)*.065;
+  const ang=doorAnim*Math.PI*.42;
+  for(const d of doors)d.rotation.y=(d.userData.hinge==='L')?-ang:ang;
+  updateLabels();ren.render(scene,cam);
+}
+animate();
+</script>
+</body>
+</html>
